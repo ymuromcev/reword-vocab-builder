@@ -8,16 +8,28 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     # Real deps added per BL-NN — see private/backlog/
-    "spacy>=3.7",   # BL-04 — POS tagging for verb detection
-    "pyyaml>=6.0",  # BL-04 — manual override file (config/verb_overrides.yaml)
+    "anthropic>=0.40",       # BL-07/08/10 — LLM backend (Anthropic SDK)
+    "beautifulsoup4>=4.12",  # BL-08 — HTML/EPUB text extraction
+    "cmudict>=1.0",          # BL-09 — offline US-English IPA transcription
+    "ebooklib>=0.18",        # BL-08 — EPUB ingestor
+    "pypdf>=4.0",            # BL-08 — PDF ingestor
+    "pyyaml>=6.0",           # BL-04 — manual verb-overrides file
+    "spacy>=3.7",            # BL-04 — POS tagging for verb detection
 ]
 
 [project.scripts]
 reword-vocab = "src.cli:main"
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0"]
+dev = [
+    "pytest>=7.0",
+    "reportlab>=4.0",  # BL-08 — synthesize tiny PDFs in tests
+]
 
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
