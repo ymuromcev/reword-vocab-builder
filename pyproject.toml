@@ -1,0 +1,21 @@
+[project]
+name = "reword-vocab-builder"
+version = "0.0.1"
+description = "Generate Reword-ready English vocabulary CSVs from any topic or source file."
+authors = [{ name = "Jared" }]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    # Real deps added per BL-NN — see private/backlog/
+]
+
+[project.scripts]
+reword-vocab = "src.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

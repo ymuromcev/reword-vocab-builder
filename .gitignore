@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+build/
+dist/
+*.egg-info/
+
+# Environment
+.env
+.env.*
+
+# Reword backup (personal data, never commit)
+*.backup
+*.sqlite
+*.db
+
+# Generated outputs
+output/
+*.csv
+!tests/fixtures/*.csv
+
+# Private (task tracking, sensitive) — backlog is the only exception
+private/*
+!private/backlog/
+!private/backlog/**
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Claude Code worktrees (per-session, not source)
+.claude/
