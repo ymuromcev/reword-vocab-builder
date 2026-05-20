@@ -1,0 +1,7 @@
+Discovery is the work of figuring out what to build.
+
+Product teams often conflate discovery with delivery, but the two disciplines require different mindsets. During discovery, we leverage prototypes and rapid customer interviews to de-risk assumptions before writing any production code.
+
+A strong product manager will frame outcomes rather than outputs. They champion the user, push back on vanity features, and align stakeholders around evidence rather than opinion.
+
+Roadmaps should be treated as living artifacts. When new evidence surfaces, the team revisits priorities and reallocates capacity to the highest-leverage opportunities.
