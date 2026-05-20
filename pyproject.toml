@@ -8,6 +8,8 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     # Real deps added per BL-NN — see private/backlog/
+    "spacy>=3.7",   # BL-04 — POS tagging for verb detection
+    "pyyaml>=6.0",  # BL-04 — manual override file (config/verb_overrides.yaml)
 ]
 
 [project.scripts]

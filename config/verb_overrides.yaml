@@ -1,0 +1,23 @@
+# Manual overrides for the verb detector (BL-04 / RFC-004).
+#
+# Use this file to correct misclassifications by the spaCy POS tagger.
+# Both lists are matched case-insensitively against the full normalized
+# phrase (single word, phrasal, or idiom).
+#
+# `verbs`     — entries forced to be treated as verbs (gets `to ` prefix).
+# `not_verbs` — entries forced NOT to be treated as verbs (no prefix).
+#
+# `not_verbs` wins over `verbs` if the same string appears in both.
+#
+# Examples (commented out — populate as real misfires are discovered):
+#
+# verbs:
+#   - bake in
+#   - move the needle
+#
+# not_verbs:
+#   - data
+#   - trade-off
+
+verbs: []
+not_verbs: []
