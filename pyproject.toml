@@ -8,6 +8,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     # Real deps added per BL-NN — see private/backlog/
+    "anthropic>=0.40",  # BL-07: topic-mode generator LLM backend
 ]
 
 [project.scripts]
