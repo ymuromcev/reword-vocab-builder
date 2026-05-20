@@ -8,14 +8,21 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     # Real deps added per BL-NN — see private/backlog/
+    "pypdf>=4.0",
+    "ebooklib>=0.18",
+    "beautifulsoup4>=4.12",
 ]
 
 [project.scripts]
 reword-vocab = "src.cli:main"
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0"]
+dev = ["pytest>=7.0", "reportlab>=4.0"]
 
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
