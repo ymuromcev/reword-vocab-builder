@@ -14,7 +14,8 @@ title: RFC index
 | 008  | BL-08 | Source-mode ingestor               | implemented |
 | 009  | BL-09 | IPA US transcription               | implemented |
 | 010  | BL-10 | Example sentences + RU enricher    | implemented |
-| 013  | BL-13 | Integration smoke test             | approved    |
+| 011  | BL-11 | CLI entrypoint                     | approved    |
+| 013  | BL-13 | Integration smoke test             | implemented |
 
 BL-05 (CSV writer) is XS tier — no RFC needed; design lives in
 `private/backlog/BL-05.md`.
