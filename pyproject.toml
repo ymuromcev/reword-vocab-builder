@@ -8,6 +8,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     # Real deps added per BL-NN — see private/backlog/
+    "cmudict>=1.0",  # BL-09: offline US-English IPA transcription
 ]
 
 [project.scripts]
