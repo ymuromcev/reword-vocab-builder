@@ -4,15 +4,17 @@ title: RFC index
 
 # RFC index
 
-| RFC  | BL    | Title                              | Status   |
-|------|-------|------------------------------------|----------|
-| 002  | BL-02 | SQLite backup reader               | approved |
-| 003  | BL-03 | Drive MCP fetcher                  | approved |
-| 004  | BL-04 | Verb detector + `to ` prefix       | approved |
-| 007  | BL-07 | Topic-mode generator               | approved |
-| 008  | BL-08 | Source-mode ingestor               | approved |
-| 009  | BL-09 | IPA US transcription               | approved |
-| 010  | BL-10 | Example sentences + RU enricher    | approved |
+| RFC  | BL    | Title                              | Status      |
+|------|-------|------------------------------------|-------------|
+| 002  | BL-02 | SQLite backup reader               | implemented |
+| 003  | BL-03 | Drive MCP fetcher                  | implemented |
+| 004  | BL-04 | Verb detector + `to ` prefix       | implemented |
+| 006  | BL-06 | Dedup against backup               | approved    |
+| 007  | BL-07 | Topic-mode generator               | implemented |
+| 008  | BL-08 | Source-mode ingestor               | implemented |
+| 009  | BL-09 | IPA US transcription               | implemented |
+| 010  | BL-10 | Example sentences + RU enricher    | implemented |
+| 013  | BL-13 | Integration smoke test             | approved    |
 
 BL-05 (CSV writer) is XS tier — no RFC needed; design lives in
 `private/backlog/BL-05.md`.
