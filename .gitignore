@@ -25,10 +25,8 @@ output/
 *.csv
 !tests/fixtures/*.csv
 
-# Private (task tracking, sensitive) — backlog is the only exception
-private/*
-!private/backlog/
-!private/backlog/**
+# Private: internal task tracking & notes, kept out of the public repo
+private/
 
 # OS
 .DS_Store

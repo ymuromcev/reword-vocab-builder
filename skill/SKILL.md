@@ -3,11 +3,16 @@ name: reword-vocab
 description: Generate a Reword-ready English vocabulary CSV from a topic or a source file (PDF/EPUB/HTML/text). Use when the user asks to build, generate, or extract vocabulary for interview prep, reading, or a domain topic.
 trigger-phrases:
   - "build vocab for *"
+  - "build vocabulary for *"
   - "generate vocabulary from *"
   - "extract vocab from *"
+  - "extract vocabulary from *"
   - "make a reword csv for *"
+  - "prep vocab for *"
   - "создай словарь для *"
+  - "построй словарь для *"
   - "вытащи слова из *"
+  - "вытащи словарь из *"
   - "сделай словарь по *"
 ---
 

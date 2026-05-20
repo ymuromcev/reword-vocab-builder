@@ -146,7 +146,7 @@ python -m spacy download en_core_web_sm
 
 spaCy's English model is used for verb detection (so the CLI knows to prefix verbs with `to `). It's a separate download (~50 MB).
 
-A public PyPI release will follow once the tool is stable — track [BL-15](private/backlog/BL-15.md).
+A public PyPI release will follow once the tool is stable.
 
 ## Contributing
 
