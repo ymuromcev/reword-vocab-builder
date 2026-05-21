@@ -71,6 +71,22 @@ reading sessions inside Claude Code.
 - **Verbs in generated CSVs must be prefixed with `to `** — base form
   only. Phrasal verbs, gerunds, nouns and idioms stay unprefixed.
 
+## Local artifacts (gitignored)
+
+User-personal artifacts live in the repo but never get committed:
+
+- `output/*.csv` — generated vocab CSVs the user has imported (or will
+  import) to Reword. Includes prior libraries like `pm_interview_vocab.csv`.
+  This folder is the canonical home for the user's vocab library; any
+  stray CSV found elsewhere (Desktop, Downloads) should be moved here.
+- The Reword backup file (`reword_en.backup`) is read from Google
+  Drive via MCP, or from a local path set via `REWORD_BACKUP_PATH`.
+  Never copied into the repo.
+
+The skill (`skill/SKILL.md`) treats these as conventions — see its
+"File locations" and "Dedup behavior" sections — and should not ask
+the user about paths on every run.
+
 ## Out of scope
 
 - Hosted / SaaS deployment. Self-host only.
