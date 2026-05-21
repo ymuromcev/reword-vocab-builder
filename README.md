@@ -4,76 +4,37 @@ Generate Reword-ready English vocabulary CSVs from any topic or source file, ded
 
 [Reword](https://reword.app) is an Android/iOS flashcard app for English vocabulary with SM2-style spaced repetition. This tool builds import-ready CSVs in Reword's native 7-column format.
 
-## Quick start
+## Quick start — Claude Desktop / Claude Code
+
+If you have Claude Desktop or Claude Code installed, you don't need Python, pip, or an Anthropic API key — the LLM is already in your chat session. One-time install:
 
 ```bash
-# 1. Install
 git clone https://github.com/ymuromcev/reword-vocab-builder.git
 cd reword-vocab-builder
-pip install -e .
-python -m spacy download en_core_web_sm
-
-# 2. Set your Anthropic API key (used for word generation + IPA fallback + enrichment)
-export ANTHROPIC_API_KEY=sk-ant-...
-
-# 3. Generate vocabulary for a topic
-reword-vocab topic "PM interview vocabulary"
-# → output/2026-05-20-pm-interview-vocabulary.csv
-
-# 4. Or extract from a book / article
-reword-vocab source ~/Documents/inspired.pdf --instruction "PM vocabulary"
-# → output/2026-05-20-inspired-pm-vocabulary.csv
+bash install-skill.sh
 ```
 
-Import the CSV into Reword via the app's import screen. The file is in Reword's native format — no conversion needed.
+That copies the skill into `~/.claude/skills/reword-vocab/` and creates the output directory at `~/Documents/reword-vocab-output/`. After install, you can delete the cloned repo — the skill is self-contained.
+
+Then, in any Claude chat:
+
+> build vocab for system design interview
+
+Claude will confirm the topic, generate candidate words, dedupe against your Reword backup + any prior CSVs in your output dir, and write a Reword-ready CSV. Import it into Reword via the app's import screen.
 
 ## What you'll see
 
-Running `reword-vocab topic ...` prints progress as it goes:
+A typical in-chat run prints something like:
 
 ```
-→ Fetching backup via Drive MCP…
-→ Backup: 1,847 words classified
-→ Generating "PM interview vocabulary" (target=200)…
-→ Generated 198 candidate words
-→ Dedup: 152 kept / 46 skipped
-→ IPA: 152/152 (CMU 138 · LLM 14)
-→ Enrich: 152/152
-→ Verb prefix applied to 43 words
-✓ output/2026-05-20-pm-interview-vocabulary.csv (152 rows)
+→ Candidates: 198 (topic: PM interview vocabulary)
+→ Backup: 1,847 words classified — 46 dedup'd as mastered/active-long
+→ Prior CSVs: 8 dedup'd
+→ IPA: 144/144 (CMU 132 · LLM 12)
+✓ ~/Documents/reword-vocab-output/2026-05-21-pm-interview-vocabulary.csv (144 rows)
 ```
 
-## Two modes
-
-**Topic mode** — describe what you want vocabulary for, get a CSV.
-
-```bash
-reword-vocab topic "PM interview vocabulary"
-reword-vocab topic "fintech and payments terminology" --target-count 100
-```
-
-**Source mode** — give it a book, article, or transcript, get vocabulary extracted from that source.
-
-```bash
-reword-vocab source ~/Documents/inspired-by-cagan.pdf --instruction "product management vocabulary I should learn"
-reword-vocab source ~/Downloads/article.txt --instruction "business English I don't know yet"
-```
-
-Supported source formats: PDF, EPUB, HTML, plain text.
-
-Both modes dedupe against your existing Reword backup (fetched from Google Drive or read from a local file) so you don't relearn words you already know.
-
-## Options
-
-| Flag | Default | Notes |
-|---|---|---|
-| `--target-count N` | 200 | Topic mode only |
-| `--output PATH` | `output/<auto>.csv` | Override output path |
-| `--backup-path PATH` | Auto-fetch from Drive | Use a local `.backup` file instead of Drive MCP |
-
-## Why it exists
-
-I (Jared) studied 5,000+ English words via Reword over several years and now want to layer domain-specific vocabulary on top — PM interview language, books I'm reading, podcast transcripts. Doing this by hand once was painful. This tool makes it repeatable.
+Followed by a 10-row preview table (word + IPA + RU translation) so you can sanity-check before importing.
 
 ## Output format
 
@@ -92,7 +53,7 @@ Example row:
 
 ## Dedup rules
 
-The tool reads your Reword backup (SQLite file) and skips words you already know well:
+The skill reads your Reword backup (SQLite file) and skips words you already know well:
 
 | State | Definition | Action |
 |---|---|---|
@@ -102,51 +63,67 @@ The tool reads your Reword backup (SQLite file) and skips words you already know
 | passive | seen but not actively reviewed | keep |
 | seen-only | dictionary entry, never studied | keep |
 
+It also dedupes against any CSV already in your output directory (so you don't relearn words you've already imported).
+
 ## Backup file resolution
 
-The CLI resolves the Reword backup in this order:
+The skill (and the CLI) resolves the Reword backup in this order:
 
-1. `--backup-path PATH` — if you pass an explicit local path, that wins.
-2. `REWORD_BACKUP_PATH` env var — same idea, set once in your shell.
-3. iCloud sync (macOS only) — reads from the Reword iCloud folder.
-4. Google Drive via the [Drive MCP connector](https://docs.claude.com/en/docs/claude-code/mcp).
+1. `REWORD_BACKUP_PATH` env var — explicit local path wins.
+2. iCloud sync (macOS only) — reads `~/Library/Mobile Documents/iCloud~ru~poas~englishwords/Documents/reword_en.backup`.
+3. Google Drive via the [Drive MCP connector](https://docs.claude.com/en/docs/claude-code/mcp).
 
-The first three work offline. The Drive fallback requires the Drive MCP server to be configured.
+The first two work fully offline. The Drive fallback requires the Drive MCP server to be configured.
 
-## Using via Claude Code
+## Updating the skill
 
-This repo ships a Claude Code skill (`skill/SKILL.md`). Inside Claude Code, just ask:
+After `git pull` in the cloned repo, re-run `bash install-skill.sh` to push the new SKILL.md and helpers into your skill library. The script is idempotent; running it twice is a no-op.
 
-> build me a vocabulary for system design interview
+If you deleted the cloned repo after install: `git clone` again, then `install-skill.sh`.
 
-Claude will confirm the topic with you, run the CLI, and show you a preview of the first rows of the generated CSV. See `skill/SKILL.md` for trigger phrases.
+---
 
-## Troubleshooting
+## Power user / headless CLI
 
-**`error: ANTHROPIC_API_KEY environment variable is required`** — Export your Anthropic API key: `export ANTHROPIC_API_KEY=sk-ant-...`. The CLI uses it for word generation, IPA fallback (when CMU dict doesn't have the word), and example-sentence enrichment.
-
-**`error: Drive MCP client is not available...`** — Either configure the Google Drive MCP connector in Claude Code, or download your Reword backup manually and pass it with `--backup-path ~/Downloads/reword_en.backup`. You can also set `REWORD_BACKUP_PATH` once in your shell.
-
-**`error: backup file not found: ...`** — The path you passed to `--backup-path` doesn't exist. Check the path with `ls`.
-
-**`error: source produced no words: ...`** — The PDF/EPUB was unreadable or yielded no extractable text. Try copying its contents into a plain `.txt` file and running again with that.
-
-**`error: unsupported source type: .docx`** — Only PDF, EPUB, HTML, and plain text are supported. Convert the file or use topic mode.
-
-**Output mentions a `-flagged.txt` file** — These are words the CLI couldn't fully transcribe or enrich. The CSV is still valid; just open the `.txt` file to see which words to add by hand or skip.
-
-**`→ All candidate words already mastered. Nothing to import.`** — Every word the generator produced was already in your Reword history as mastered or active-long. Try a different topic, increase `--target-count`, or narrow the prompt to a more specific niche.
-
-## Install
+The `reword-vocab` CLI is a standalone alternative for cron jobs, CI, and any environment without a Claude session. It does the same work as the skill but uses the Anthropic API directly, so it needs an API key.
 
 ```bash
 pip install -e .
 python -m spacy download en_core_web_sm
+export ANTHROPIC_API_KEY=sk-ant-...
+
+reword-vocab topic "PM interview vocabulary"
+# → ~/Documents/reword-vocab-output/2026-05-21-pm-interview-vocabulary.csv
+
+reword-vocab source ~/Documents/inspired.pdf --instruction "PM vocabulary"
+# → ~/Documents/reword-vocab-output/2026-05-21-inspired-pm-vocabulary.csv
 ```
 
-spaCy's English model is used for verb detection (so the CLI knows to prefix verbs with `to `). It's a separate download (~50 MB).
+Supported source formats: PDF, EPUB, HTML, plain text.
 
-A public PyPI release will follow once the tool is stable.
+Override the output dir for one run with `--output PATH` or globally with `REWORD_VOCAB_OUTPUT_DIR`.
+
+| Flag | Default | Notes |
+|---|---|---|
+| `--target-count N` | 200 | Topic mode only |
+| `--output PATH` | `$REWORD_VOCAB_OUTPUT_DIR/<auto>.csv` | Override output path |
+| `--backup-path PATH` | Auto-resolved (see above) | Force a specific backup file |
+
+### CLI troubleshooting
+
+**`error: ANTHROPIC_API_KEY environment variable is required`** — The CLI needs an Anthropic API key for word generation and example enrichment. If you're in a Claude Desktop chat, use the skill instead (no key needed). For headless use: `export ANTHROPIC_API_KEY=sk-ant-...`.
+
+**`error: Drive MCP client is not available...`** — Either configure the Google Drive MCP connector, or set `REWORD_BACKUP_PATH` to a local copy of the backup file.
+
+**`error: source produced no words: ...`** — The PDF/EPUB was unreadable. Try copying its contents into a plain `.txt` file and rerunning.
+
+**`error: unsupported source type: .docx`** — Only PDF, EPUB, HTML, and plain text. Convert the file or use topic mode.
+
+**`Output mentions a -flagged.txt file`** — Words the CLI couldn't fully transcribe or enrich. The CSV is still valid; the `.txt` lists what to add by hand.
+
+## Why it exists
+
+I (Jared) studied 5,000+ English words via Reword over several years and now want to layer domain-specific vocabulary on top — PM interview language, books I'm reading, podcast transcripts. Doing this by hand once was painful. This tool makes it repeatable.
 
 ## Contributing
 
