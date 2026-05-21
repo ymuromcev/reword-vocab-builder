@@ -11,6 +11,7 @@ import re
 
 import pytest
 
+from reword_vocab import ipa as ipa_mod
 from reword_vocab.ipa import transcribe
 
 
@@ -205,3 +206,22 @@ def test_common_words_match_bracket_regex(word):
     assert flagged is False
     assert ipa is not None
     assert re.match(r"^\[[^\[\]]+\]$", ipa)
+
+
+# ---------------------------------------------------------------------------
+# Frozen CMU dict (RFC 014 §5 — skill-bundled offline path)
+# ---------------------------------------------------------------------------
+
+
+def test_frozen_cmudict_env_takes_priority(monkeypatch, tmp_path):
+    """If the frozen-JSON env var points to a file, that wins over the package."""
+    import json
+    frozen = tmp_path / "frozen.json"
+    # Single fixture entry the real package may not include verbatim.
+    frozen.write_text(json.dumps({"qwertyzz": [["K", "W", "ER1", "T", "IY0"]]}))
+
+    monkeypatch.setattr(ipa_mod, "_cached_dict", None)
+    monkeypatch.setenv(ipa_mod._FROZEN_ENV, str(frozen))
+
+    d = ipa_mod._get_dict()
+    assert "qwertyzz" in d

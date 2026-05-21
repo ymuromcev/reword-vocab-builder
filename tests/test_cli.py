@@ -39,6 +39,24 @@ def test_slugify_empty_falls_back():
     assert cli_mod._slugify("***") == "vocab"
 
 
+def test_output_dir_default(monkeypatch):
+    monkeypatch.delenv(cli_mod._OUTPUT_DIR_ENV, raising=False)
+    assert cli_mod._resolve_output_dir() == cli_mod._OUTPUT_DIR_DEFAULT
+
+
+def test_output_dir_env_override(monkeypatch, tmp_path):
+    target = tmp_path / "custom-out"
+    monkeypatch.setenv(cli_mod._OUTPUT_DIR_ENV, str(target))
+    assert cli_mod._resolve_output_dir() == target
+
+
+def test_output_path_uses_resolved_dir(monkeypatch, tmp_path):
+    monkeypatch.setenv(cli_mod._OUTPUT_DIR_ENV, str(tmp_path))
+    out = cli_mod._output_path(None, "pm-vocab")
+    assert out.parent == tmp_path
+    assert out.name.endswith("-pm-vocab.csv")
+
+
 def test_parser_topic_minimal():
     parser = cli_mod._build_parser()
     args = parser.parse_args(["topic", "PM vocabulary"])

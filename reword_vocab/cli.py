@@ -81,11 +81,27 @@ def _source_slug(file_path: Path, instruction: str) -> str:
     return _slugify(combined)
 
 
+_OUTPUT_DIR_ENV = "REWORD_VOCAB_OUTPUT_DIR"
+_OUTPUT_DIR_DEFAULT = Path.home() / "Documents" / "reword-vocab-output"
+
+
+def _resolve_output_dir() -> Path:
+    """Where new CSVs are written.
+
+    Resolution: ``$REWORD_VOCAB_OUTPUT_DIR`` if set, else
+    ``~/Documents/reword-vocab-output/``. The installer creates the
+    default dir; callers ``mkdir(parents=True, exist_ok=True)`` before
+    writing so a fresh shell still works.
+    """
+    override = os.environ.get(_OUTPUT_DIR_ENV)
+    return Path(override).expanduser() if override else _OUTPUT_DIR_DEFAULT
+
+
 def _output_path(explicit: Path | None, slug: str) -> Path:
     if explicit is not None:
         return explicit
     today = _dt.date.today().isoformat()
-    return Path("output") / f"{today}-{slug}.csv"
+    return _resolve_output_dir() / f"{today}-{slug}.csv"
 
 
 def _resolve_backup(backup_path: Path | None) -> Path:
