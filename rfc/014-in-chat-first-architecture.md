@@ -2,7 +2,7 @@
 id: RFC-014
 bl: BL-16
 title: In-chat-first skill architecture (no CLI install, no API key)
-status: approved
+status: implemented
 date: 2026-05-21
 ---
 
