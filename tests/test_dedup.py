@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from src.backup_reader import ClassifiedWord
-from src.dedup import DedupReport, dedup, dedup_only
+from reword_vocab.backup_reader import ClassifiedWord
+from reword_vocab.dedup import DedupReport, dedup, dedup_only
 
 
 def _cw(word: str, status: str, interval_days: float = 0.0) -> ClassifiedWord:

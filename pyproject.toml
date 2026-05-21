@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.scripts]
-reword-vocab = "src.cli:main"
+reword-vocab = "reword_vocab.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -29,6 +29,9 @@ dev = [
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["reword_vocab*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

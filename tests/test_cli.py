@@ -1,4 +1,4 @@
-"""Tests for src.cli — argparse shape + two end-to-end smokes.
+"""Tests for reword_vocab.cli — argparse shape + two end-to-end smokes.
 
 All external boundaries (Drive, backup SQLite, LLM, IPA, enricher) are
 monkeypatched so the tests run hermetically. Verifies that the wiring
@@ -12,9 +12,9 @@ from pathlib import Path
 
 import pytest
 
-from src import backup_reader, csv_writer
-from src import cli as cli_mod
-from src.backup_reader import ClassifiedWord
+from reword_vocab import backup_reader, csv_writer
+from reword_vocab import cli as cli_mod
+from reword_vocab.backup_reader import ClassifiedWord
 
 
 # ---------------------------------------------------------------------------
@@ -37,6 +37,24 @@ def test_slugify_truncates():
 
 def test_slugify_empty_falls_back():
     assert cli_mod._slugify("***") == "vocab"
+
+
+def test_output_dir_default(monkeypatch):
+    monkeypatch.delenv(cli_mod._OUTPUT_DIR_ENV, raising=False)
+    assert cli_mod._resolve_output_dir() == cli_mod._OUTPUT_DIR_DEFAULT
+
+
+def test_output_dir_env_override(monkeypatch, tmp_path):
+    target = tmp_path / "custom-out"
+    monkeypatch.setenv(cli_mod._OUTPUT_DIR_ENV, str(target))
+    assert cli_mod._resolve_output_dir() == target
+
+
+def test_output_path_uses_resolved_dir(monkeypatch, tmp_path):
+    monkeypatch.setenv(cli_mod._OUTPUT_DIR_ENV, str(tmp_path))
+    out = cli_mod._output_path(None, "pm-vocab")
+    assert out.parent == tmp_path
+    assert out.name.endswith("-pm-vocab.csv")
 
 
 def test_parser_topic_minimal():

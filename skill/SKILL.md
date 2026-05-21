@@ -53,22 +53,21 @@ For source mode, confirm:
 
 ## File locations — assume these and stop asking
 
-The user has settled on these defaults (2026-05-20). Do not ask again:
+The user has settled on these defaults. Do not ask again:
 
-- **Vocab CSVs (current + prior generations)** live in `output/` of
-  this repo. Both new outputs and previously-imported libraries
-  (e.g. `pm_interview_vocab.csv`) sit here. The folder is gitignored.
-- **Reword backup** — canonical source is Google Drive, fetched via
-  the Drive MCP connector (the CLI's default last-step fallback). If
-  the user has a faster local snapshot they want to use, they set
-  `REWORD_BACKUP_PATH` once in their shell — not per command.
-- **Output naming** — the CLI's default (`output/<YYYY-MM-DD>-<slug>.csv`)
-  is the standard. Don't override `--output` unless the user asks.
+- **Output dir** — `$REWORD_VOCAB_OUTPUT_DIR` if set, otherwise
+  `~/Documents/reword-vocab-output/`. New CSVs go here. The installer
+  creates the dir; ensure it exists before writing.
+- **Legacy output dir** — `<repo>/output/` (only if the repo is
+  cloned locally). Read for dedup purposes but never write to it.
+- **Reword backup** — canonical source is the iCloud Reword folder
+  on macOS (`~/Library/Mobile Documents/iCloud~ru~poas~englishwords/Documents/reword_en.backup`), or `$REWORD_BACKUP_PATH` if the user
+  set one, or Google Drive via MCP as a last resort.
+- **Output naming** — `<output_dir>/<YYYY-MM-DD>-<slug>.csv`. Stable
+  convention; do not override.
 
-If you find a vocab CSV the user mentions sitting outside `output/`
-(e.g. on the Desktop), move it into `output/` and proceed — do not
-ask whether to move it. This convention exists so the dedup step
-below works without further configuration.
+If the user mentions a vocab CSV outside the output dirs above, move
+or copy it into the primary output dir and proceed — do not ask.
 
 ## Dedup behavior — always against prior vocab CSVs
 
@@ -109,9 +108,46 @@ The user's stated default (2026-05-20) is: include everything that
 isn't basic English or a stop-word, even one-shot occurrences. Encode
 that into the instruction unless the user says otherwise.
 
+## Inline Python harness — how to import helpers
+
+The skill ships its pure-Python helpers at
+`~/.claude/skills/reword-vocab/lib/` (copied there by
+`install-skill.sh`). When you need them, write an inline `python3`
+script via the `Bash` tool and prepend that path to `sys.path` so the
+helpers are importable without `pip install`:
+
+```python
+import os, sys
+sys.path.insert(0, os.path.expanduser("~/.claude/skills/reword-vocab/lib"))
+
+import backup_reader, dedup, ipa, csv_writer
+from generators import source as src_gen
+```
+
+Helper API (one-line each):
+
+- `backup_reader.read_backup(path) -> dict[str, ClassifiedWord]` —
+  reads Reword's SQLite backup and classifies each word's SRS state.
+- `dedup.dedup(candidates, backup_index) -> (kept, DedupReport)` —
+  drops mastered / active-long words; keeps the rest.
+- `ipa.transcribe(word, llm=None) -> (ipa_str, flagged)` — CMU-first
+  US IPA. The skill bundle ships a frozen CMU dict at
+  `lib/cmudict_frozen.json` so this works offline. Pass a callable
+  for the LLM fallback if you want non-CMU words covered (in chat,
+  do the fallback yourself — read the prompt's last line as the word
+  and respond with `[ˌipaˌstring]`).
+- `csv_writer.write_csv(rows, path)` — writes the 7-column Reword
+  CSV (`word, ipa, ru, ex1_en, ex1_ru, ex2_en, ex2_ru`).
+- `src_gen.read_source_file(path)` / pure parsing helpers — text
+  extraction from PDF / EPUB / HTML / plain text.
+
 ## Execution recipe (inside Claude Code — the default path)
 
-Do the following yourself, step by step. No external CLI.
+Do the following yourself, step by step. **Never** shell out to the
+`reword-vocab` CLI from inside this chat. The CLI exists only for
+headless / cron use; if the user explicitly wants the CLI, tell them
+to run it from their own shell. The LLM steps below are *you*, not a
+subprocess.
 
 1. **Read source.**
    - Topic mode: generate ~200 candidate content words / idioms /
@@ -128,9 +164,12 @@ Do the following yourself, step by step. No external CLI.
    (≥ 14 days). Drop those from candidates. If the backup isn't
    accessible, say so and proceed without it (warn the user once).
 
-3. **Dedup vs prior CSVs.** Glob `output/*.csv`, read column 1 of
-   each, drop any candidate already there (case-insensitive, strip
-   leading `to `).
+3. **Dedup vs prior CSVs.** Glob the primary output dir
+   (`$REWORD_VOCAB_OUTPUT_DIR` or `~/Documents/reword-vocab-output/`)
+   AND, if the repo is cloned at
+   `~/Desktop/Claude Code/reword-vocab-builder/output/`, that legacy
+   dir too. Read column 1 of each CSV; drop any candidate already
+   present (case-insensitive, strip leading `to `).
 
 4. **For each remaining word, build the row:**
    - `word` — base form (prefix `to ` for verbs in base form; phrasal
@@ -146,10 +185,12 @@ Do the following yourself, step by step. No external CLI.
    - `example1_ru` / `example2_ru` — Russian translations of the
      above (natural, not calque).
 
-5. **Write CSV** to `output/<YYYY-MM-DD>-<slug>.csv` in Reword's
-   7-column format (semicolon-separated, double-quoted, UTF-8, no
-   header). Use the existing CSV writer style from prior outputs in
-   `output/` if any exist.
+5. **Write CSV** to
+   `<output_dir>/<YYYY-MM-DD>-<slug>.csv` (output_dir resolves per
+   the "File locations" section above) via
+   `csv_writer.write_csv(rows, path)` from the inline harness so the
+   format is identical to CLI output (7 columns, semicolon, all
+   values double-quoted, UTF-8, no header, LF newlines).
 
 6. **Show the user:**
    - Absolute path to the CSV.
@@ -170,6 +211,10 @@ Do the following yourself, step by step. No external CLI.
   the backup contains personal SRS history and is gitignored.
 - Do not bypass dedup ("just give me all 200 words anyway") —
   re-importing mastered words breaks the user's SRS schedule.
-- Do not shell out to the `reword-vocab` CLI from inside Claude Code
-  unless the user explicitly asks for it — Claude in this session
-  does the work natively.
+- **Never** shell out to the `reword-vocab` CLI from inside a Claude
+  chat. The CLI exists for headless / cron use only. If the user
+  explicitly asks for the CLI path, tell them to run it from their
+  own shell — do not invoke it from this session.
+- Do not propose `pip install`, `spacy download`, or
+  `export ANTHROPIC_API_KEY`. The skill works in-chat with zero
+  setup beyond `bash install-skill.sh` (which the user runs once).

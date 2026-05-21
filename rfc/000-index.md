@@ -16,6 +16,7 @@ title: RFC index
 | 010  | BL-10 | Example sentences + RU enricher    | implemented |
 | 011  | BL-11 | CLI entrypoint                     | approved    |
 | 013  | BL-13 | Integration smoke test             | implemented |
+| 014  | BL-16 | In-chat-first skill architecture   | implemented |
 
 BL-05 (CSV writer) is XS tier — no RFC needed; design lives in
 `private/backlog/BL-05.md`.

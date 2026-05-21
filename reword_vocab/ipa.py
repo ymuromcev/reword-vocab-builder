@@ -30,13 +30,24 @@ is intentionally narrow to US-English approximants — rhotic ``ER`` →
 
 from __future__ import annotations
 
+import json
+import os
 import re
+from pathlib import Path
 from typing import Callable, Optional
 
 try:  # pragma: no cover - import shim for offline CI
     import cmudict as _cmudict
 except ImportError:  # pragma: no cover
     _cmudict = None
+
+
+# Frozen CMU dict shipped inside the installed skill bundle so the
+# in-chat path works without ``pip install cmudict``. The freeze script
+# (`scripts/freeze_cmudict.py`) produces this file during installer
+# run; format is a JSON object ``{word: [[phones, ...], ...]}``.
+_FROZEN_ENV = "REWORD_VOCAB_CMUDICT_FROZEN"
+_FROZEN_DEFAULT = Path.home() / ".claude/skills/reword-vocab/lib/cmudict_frozen.json"
 
 
 # ---------------------------------------------------------------------------
@@ -130,14 +141,36 @@ _cached_dict: Optional[dict[str, list[list[str]]]] = None
 
 
 def _get_dict() -> dict[str, list[list[str]]]:
-    """Load the CMU dict once per process. Returns a plain ``dict``."""
+    """Load the CMU dict once per process. Returns a plain ``dict``.
+
+    Resolution order:
+    1. ``$REWORD_VOCAB_CMUDICT_FROZEN`` — explicit JSON path.
+    2. ``~/.claude/skills/reword-vocab/lib/cmudict_frozen.json`` — the
+       file produced by the skill installer.
+    3. The ``cmudict`` package, if importable.
+
+    The frozen path lets the in-chat skill work without ``pip install
+    cmudict``; the package path keeps the CLI / dev workflow working
+    when no frozen file exists.
+    """
     global _cached_dict
-    if _cached_dict is None:
-        if _cmudict is None:  # pragma: no cover - guarded at import time
-            raise RuntimeError(
-                "cmudict is not installed; add it to project dependencies"
-            )
-        _cached_dict = _cmudict.dict()
+    if _cached_dict is not None:
+        return _cached_dict
+
+    for candidate in (os.environ.get(_FROZEN_ENV), _FROZEN_DEFAULT):
+        if not candidate:
+            continue
+        path = Path(candidate)
+        if path.is_file():
+            _cached_dict = json.loads(path.read_text())
+            return _cached_dict
+
+    if _cmudict is None:  # pragma: no cover - guarded at import time
+        raise RuntimeError(
+            "cmudict is not installed and no frozen dict found at "
+            f"{_FROZEN_DEFAULT} (override via {_FROZEN_ENV})."
+        )
+    _cached_dict = _cmudict.dict()
     return _cached_dict
 
 

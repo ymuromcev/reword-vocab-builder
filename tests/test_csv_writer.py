@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from src.csv_writer import COLUMNS, write_csv
+from reword_vocab.csv_writer import COLUMNS, write_csv
 
 
 def _row(word, ipa, ru, ex1_en, ex1_ru, ex2_en, ex2_ru):

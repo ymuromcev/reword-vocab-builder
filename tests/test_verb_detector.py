@@ -1,4 +1,4 @@
-"""Tests for ``src.verb_detector`` — hermetic, no real spaCy model needed."""
+"""Tests for ``reword_vocab.verb_detector`` — hermetic, no real spaCy model needed."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from typing import Iterable
 
 import pytest
 
-from src import verb_detector
-from src.verb_detector import is_verb, set_nlp, to_prefix
+from reword_vocab import verb_detector
+from reword_vocab.verb_detector import is_verb, set_nlp, to_prefix
 
 
 # ---------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 
 Public API:
 
-    from src.generators.topic import generate
+    from reword_vocab.generators.topic import generate
 
     words = generate("PM interview vocabulary", target_count=200)
     # [{"word": "leverage", "part_of_speech": "verb",
