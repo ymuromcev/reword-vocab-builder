@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from src.generators import source as source_mod
-from src.generators.source import (
+from reword_vocab.generators import source as source_mod
+from reword_vocab.generators.source import (
     UnsupportedSourceError,
     _chunk_text,
     _parse_json_array,

@@ -1,4 +1,4 @@
-"""Unit tests for ``src.drive_mcp``.
+"""Unit tests for ``reword_vocab.drive_mcp``.
 
 All Drive interaction is faked via the injected client. No real network.
 iCloud-specific test is skipped on non-macOS platforms.
@@ -14,7 +14,7 @@ from typing import List, Sequence
 
 import pytest
 
-from src.drive_mcp import (
+from reword_vocab.drive_mcp import (
     DEFAULT_TTL_HOURS,
     DriveFile,
     DriveUnavailableError,
@@ -108,7 +108,7 @@ def test_icloud_fallback_skipped_on_non_darwin(
     monkeypatch, clean_env, tmp_path, cache_path
 ):
     """Even if a path that looks like iCloud exists, non-mac platforms ignore it."""
-    monkeypatch.setattr("src.drive_mcp.sys.platform", "linux")
+    monkeypatch.setattr("reword_vocab.drive_mcp.sys.platform", "linux")
 
     fake_icloud = tmp_path / "fake_icloud" / "reword_en.backup"
     fake_icloud.parent.mkdir(parents=True)
@@ -139,7 +139,7 @@ def test_drive_search_picks_latest_and_writes_cache(
     monkeypatch, clean_env, tmp_path, cache_path
 ):
     # Force non-mac so we go straight to Drive.
-    monkeypatch.setattr("src.drive_mcp.sys.platform", "linux")
+    monkeypatch.setattr("reword_vocab.drive_mcp.sys.platform", "linux")
 
     client = FakeDriveClient(
         matches=[
@@ -166,7 +166,7 @@ def test_drive_search_picks_latest_and_writes_cache(
 
 
 def test_drive_unavailable_when_no_client(monkeypatch, clean_env, tmp_path, cache_path):
-    monkeypatch.setattr("src.drive_mcp.sys.platform", "linux")
+    monkeypatch.setattr("reword_vocab.drive_mcp.sys.platform", "linux")
 
     with pytest.raises(DriveUnavailableError) as excinfo:
         fetch_latest_backup(
@@ -178,7 +178,7 @@ def test_drive_unavailable_when_no_client(monkeypatch, clean_env, tmp_path, cach
 
 
 def test_drive_unavailable_when_search_empty(monkeypatch, clean_env, tmp_path, cache_path):
-    monkeypatch.setattr("src.drive_mcp.sys.platform", "linux")
+    monkeypatch.setattr("reword_vocab.drive_mcp.sys.platform", "linux")
 
     client = FakeDriveClient(matches=[])
     with pytest.raises(DriveUnavailableError):
@@ -195,7 +195,7 @@ def test_drive_unavailable_when_search_empty(monkeypatch, clean_env, tmp_path, c
 
 
 def test_fresh_cache_skips_mcp(monkeypatch, clean_env, tmp_path, cache_path):
-    monkeypatch.setattr("src.drive_mcp.sys.platform", "linux")
+    monkeypatch.setattr("reword_vocab.drive_mcp.sys.platform", "linux")
 
     cache_path.parent.mkdir(parents=True)
     cache_path.write_bytes(b"cached-bytes")
@@ -223,7 +223,7 @@ def test_fresh_cache_skips_mcp(monkeypatch, clean_env, tmp_path, cache_path):
 
 
 def test_stale_cache_triggers_refetch(monkeypatch, clean_env, tmp_path, cache_path):
-    monkeypatch.setattr("src.drive_mcp.sys.platform", "linux")
+    monkeypatch.setattr("reword_vocab.drive_mcp.sys.platform", "linux")
 
     cache_path.parent.mkdir(parents=True)
     cache_path.write_bytes(b"old-bytes")
@@ -252,7 +252,7 @@ def test_stale_cache_triggers_refetch(monkeypatch, clean_env, tmp_path, cache_pa
 def test_force_bypasses_fresh_cache(
     monkeypatch, clean_env, tmp_path, cache_path
 ):
-    monkeypatch.setattr("src.drive_mcp.sys.platform", "linux")
+    monkeypatch.setattr("reword_vocab.drive_mcp.sys.platform", "linux")
 
     cache_path.parent.mkdir(parents=True)
     cache_path.write_bytes(b"old-bytes")

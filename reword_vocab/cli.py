@@ -14,9 +14,9 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
-from src import backup_reader, csv_writer, dedup, drive_mcp, enricher, ipa, verb_detector
-from src.generators import source as source_mod
-from src.generators import topic as topic_mod
+from reword_vocab import backup_reader, csv_writer, dedup, drive_mcp, enricher, ipa, verb_detector
+from reword_vocab.generators import source as source_mod
+from reword_vocab.generators import topic as topic_mod
 
 
 # ---------------------------------------------------------------------------

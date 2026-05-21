@@ -10,7 +10,7 @@ import json
 
 import pytest
 
-from src.enricher import (
+from reword_vocab.enricher import (
     EnrichmentError,
     REQUIRED_FIELDS,
     enrich,

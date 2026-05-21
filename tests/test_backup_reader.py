@@ -1,4 +1,4 @@
-"""Tests for src.backup_reader (BL-02 / RFC-002).
+"""Tests for reword_vocab.backup_reader (BL-02 / RFC-002).
 
 Synthetic SQLite DB is built programmatically in a fixture — no real
 Reword backup is ever committed or required.
@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from src.backup_reader import (
+from reword_vocab.backup_reader import (
     SECONDS_PER_DAY,
     ClassifiedWord,
     classify,
@@ -177,7 +177,7 @@ def test_read_backup_is_readonly(tmp_path, synthetic_db):
 
 def test_read_backup_readonly_rejects_writes(synthetic_db):
     """Internal sanity: the URI-mode connection cannot insert rows."""
-    from src.backup_reader import _connect_readonly
+    from reword_vocab.backup_reader import _connect_readonly
 
     with _connect_readonly(str(synthetic_db)) as conn:
         with pytest.raises(sqlite3.OperationalError):

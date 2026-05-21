@@ -1,4 +1,4 @@
-"""Tests for src.cli — argparse shape + two end-to-end smokes.
+"""Tests for reword_vocab.cli — argparse shape + two end-to-end smokes.
 
 All external boundaries (Drive, backup SQLite, LLM, IPA, enricher) are
 monkeypatched so the tests run hermetically. Verifies that the wiring
@@ -12,9 +12,9 @@ from pathlib import Path
 
 import pytest
 
-from src import backup_reader, csv_writer
-from src import cli as cli_mod
-from src.backup_reader import ClassifiedWord
+from reword_vocab import backup_reader, csv_writer
+from reword_vocab import cli as cli_mod
+from reword_vocab.backup_reader import ClassifiedWord
 
 
 # ---------------------------------------------------------------------------

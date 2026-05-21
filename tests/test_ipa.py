@@ -11,7 +11,7 @@ import re
 
 import pytest
 
-from src.ipa import transcribe
+from reword_vocab.ipa import transcribe
 
 
 # ---------------------------------------------------------------------------

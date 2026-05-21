@@ -18,7 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Iterable
 
-from src.backup_reader import ClassifiedWord, normalize_key
+from reword_vocab.backup_reader import ClassifiedWord, normalize_key
 
 SKIP_STATUSES = frozenset({"mastered", "active-long"})
 

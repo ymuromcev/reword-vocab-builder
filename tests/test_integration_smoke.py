@@ -34,9 +34,9 @@ from dataclasses import dataclass
 
 import pytest
 
-from src import dedup as dedup_mod
-from src import verb_detector
-from src.csv_writer import write_csv
+from reword_vocab import dedup as dedup_mod
+from reword_vocab import verb_detector
+from reword_vocab.csv_writer import write_csv
 
 
 # ---------------------------------------------------------------------------

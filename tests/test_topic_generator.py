@@ -9,7 +9,7 @@ import json
 
 import pytest
 
-from src.generators.topic import generate
+from reword_vocab.generators.topic import generate
 
 
 class FakeLLM:
