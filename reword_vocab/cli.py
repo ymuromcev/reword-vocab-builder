@@ -150,7 +150,7 @@ def _run_pipeline(
     kept, report = dedup.dedup(words, index)
     print(f"→ Dedup: {report.kept} kept / {report.skipped} skipped")
     if not kept:
-        print("→ All candidate words already mastered. Nothing to import.")
+        print("→ All candidate words are already in your Reword library. Nothing to import.")
         return 0
 
     # IPA transcription
