@@ -263,8 +263,9 @@ def test_pipeline_produces_expected_csv(tmp_path, pipeline_env):
 
     on_disk = _read_csv(out_path)
 
-    # Input has 5 items, one ("dominate") is mastered and should be dropped.
-    assert len(on_disk) == len(raw_generated) - 1 == 4
+    # BL-18: two items are in the backup ("dominate" mastered, "leverage"
+    # passive) and both are dropped as duplicates -> 3 survive.
+    assert len(on_disk) == len(raw_generated) - 2 == 3
 
     # Every row has exactly 7 populated columns.
     for csv_row in on_disk:
@@ -272,12 +273,13 @@ def test_pipeline_produces_expected_csv(tmp_path, pipeline_env):
         for cell in csv_row:
             assert cell != ""
 
-    # DedupReport tallies exactly one mastered drop.
+    # DedupReport tallies both backup drops by their status.
     assert report.reasons["mastered"] == 1
+    assert report.reasons["passive"] == 1
 
 
-def test_pipeline_drops_mastered(tmp_path, pipeline_env):
-    """`dominate` is mastered and must not appear in the final CSV."""
+def test_pipeline_drops_backup_words(tmp_path, pipeline_env):
+    """Any word already in the backup is dropped, regardless of status."""
     backup_index = pipeline_env["backup_index"]
     raw_generated = pipeline_env["raw_generated"]
     enrichment_table = pipeline_env["enrichment_table"]
@@ -292,12 +294,14 @@ def test_pipeline_drops_mastered(tmp_path, pipeline_env):
     on_disk = _read_csv(out_path)
 
     en_column = [row[0] for row in on_disk]
+    # `dominate` (mastered) is dropped.
     assert "to dominate" not in en_column
     assert "dominate" not in en_column
 
-    # `leverage` is in the backup but only as `passive` (interval_days=2),
-    # so it must be kept.
-    assert "to leverage" in en_column
+    # BL-18: `leverage` is in the backup as `passive`, which now also counts
+    # as a duplicate, so it must NOT appear.
+    assert "to leverage" not in en_column
+    assert "leverage" not in en_column
 
 
 def test_pipeline_applies_to_prefix_only_to_verbs(tmp_path, pipeline_env):
@@ -316,8 +320,8 @@ def test_pipeline_applies_to_prefix_only_to_verbs(tmp_path, pipeline_env):
     on_disk = _read_csv(out_path)
     en_column = [row[0] for row in on_disk]
 
-    # Verbs that survived dedup must be prefixed.
-    assert "to leverage" in en_column
+    # Verbs that survived dedup must be prefixed. (BL-18: `leverage` is a
+    # backup duplicate and no longer survives, so it isn't checked here.)
     assert "to align" in en_column
     assert "to iterate" in en_column
 

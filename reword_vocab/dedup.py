@@ -3,14 +3,18 @@
 Implements RFC-006 / BL-06. Pure function: no I/O, no logging.
 The caller (CLI) prints from the returned `DedupReport`.
 
-Routing rules (per RFC-006):
+Routing rules (per RFC-006, amended by BL-18 2026-06-01):
 
 - empty / whitespace word    -> skip, reason "empty-word"
 - key not in backup_index    -> keep, reason "new"
-- status "mastered"          -> skip, reason "mastered"
-- status "active-long"       -> skip, reason "active-long"
-- any other status           -> keep, reason == status
+- key IS in backup_index     -> skip, reason == its status (ANY status)
 - duplicate key within input -> first kept, rest skipped "in-list-duplicate"
+
+BL-18 change: a word already present in the Reword backup is dropped
+regardless of SRS status. Reword's CSV importer creates a *duplicate*
+card for an existing word rather than rescheduling it, so re-emitting
+any known word (even a barely-"seen-only" one) leaks duplicates. Only
+genuinely new words (`reason == "new"`) survive.
 """
 
 from __future__ import annotations
@@ -19,8 +23,6 @@ from dataclasses import dataclass, field
 from typing import Iterable
 
 from reword_vocab.backup_reader import ClassifiedWord, normalize_key
-
-SKIP_STATUSES = frozenset({"mastered", "active-long"})
 
 REASON_ORDER = (
     "new",
@@ -69,14 +71,8 @@ class DedupReport:
 
 
 def _is_keep_reason(reason: str) -> bool:
-    return reason in {
-        "new",
-        "passive",
-        "passive-long",
-        "passive-mastered",
-        "seen-only",
-        "active",
-    }
+    # BL-18: only genuinely new words are kept; any backup status is a dup.
+    return reason == "new"
 
 
 def dedup(
@@ -101,10 +97,9 @@ def dedup(
             entry = backup_index.get(key)
             if entry is None:
                 decision, reason = "kept", "new"
-            elif entry.status in SKIP_STATUSES:
-                decision, reason = "skipped", entry.status
             else:
-                decision, reason = "kept", entry.status
+                # BL-18: present in backup in ANY status -> duplicate.
+                decision, reason = "skipped", entry.status
 
         decisions.append((raw, decision, reason))
         reasons[reason] = reasons.get(reason, 0) + 1

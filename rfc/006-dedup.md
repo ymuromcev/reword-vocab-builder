@@ -4,13 +4,33 @@ bl: BL-06
 title: Dedup pass against Reword backup using SRS state
 status: approved
 date: 2026-05-20
+amended: 2026-06-01
+amended_by: BL-18
 ---
+
+## Amendment — BL-18 (2026-06-01): strict dedup is the default
+
+The original rule kept "weak" statuses (`passive`, `passive-long`,
+`passive-mastered`, `seen-only`, `active`) on the theory that those
+words were still worth practicing actively. In practice this leaked
+duplicates: Reword's CSV importer **creates a new card** for a word it
+already has rather than rescheduling it. So any word present in the
+backup — in *any* status — becomes a duplicate on import.
+
+New rule (now implemented): **drop a candidate if its key exists in
+`backup_index` at all.** Only `reason == "new"` (key absent) survives.
+The report still records the skip reason as the word's status, so the
+user sees how many `seen-only` / `passive` / `mastered` words were
+dropped. The "Filter rules" and "Risks / decisions" sections below
+describe the original design and are kept for history; where they
+conflict with this amendment, the amendment wins.
 
 ## Goal
 
 Filter a freshly generated word list against the user's existing
 Reword vocabulary so the CSV only contains words worth importing —
-new or still-weak words. Mastered / active-long entries are dropped.
+words not already in Reword. Any word present in the backup (any SRS
+status) is dropped to avoid duplicate cards on import.
 
 ## Public API
 

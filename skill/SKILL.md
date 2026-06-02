@@ -129,7 +129,9 @@ Helper API (one-line each):
 - `backup_reader.read_backup(path) -> dict[str, ClassifiedWord]` —
   reads Reword's SQLite backup and classifies each word's SRS state.
 - `dedup.dedup(candidates, backup_index) -> (kept, DedupReport)` —
-  drops mastered / active-long words; keeps the rest.
+  drops any candidate already present in the backup, in **any** SRS
+  status (BL-18). Only words absent from the backup survive. The
+  report still tallies the dropped words by their status.
 - `ipa.transcribe(word, llm=None) -> (ipa_str, flagged)` — CMU-first
   US IPA. The skill bundle ships a frozen CMU dict at
   `lib/cmudict_frozen.json` so this works offline. Pass a callable
@@ -157,11 +159,15 @@ subprocess.
      Tokenise, lemma-normalise lightly, keep content words and
      multi-word expressions per the Default filter.
 
-2. **Dedup vs Reword backup.** The backup is a SQLite file at
-   `$REWORD_BACKUP_PATH` (preferred) or fetched from Google Drive via
-   MCP. Connect via the `Bash` tool's `sqlite3` and pull words whose
-   SRS state is `mastered` (review interval ≥ 60 days) or `active-long`
-   (≥ 14 days). Drop those from candidates. If the backup isn't
+2. **Dedup vs Reword backup (strict — BL-18).** The backup is a
+   SQLite file at `$REWORD_BACKUP_PATH` (preferred) or fetched from
+   Google Drive via MCP. Build the `backup_index` via
+   `backup_reader.read_backup(...)` and drop **any** candidate whose
+   normalized key is present — in **any** SRS status, not just
+   `mastered` / `active-long`. Rationale: Reword's importer creates a
+   duplicate card for a word it already has (even a barely
+   `seen-only` one), so re-emitting any known word leaks duplicates.
+   Keep only words absent from the backup. If the backup isn't
    accessible, say so and proceed without it (warn the user once).
 
 3. **Dedup vs prior CSVs.** Glob the primary output dir
@@ -210,7 +216,8 @@ subprocess.
 - Do not commit the Reword backup or any vocabulary the tool reads —
   the backup contains personal SRS history and is gitignored.
 - Do not bypass dedup ("just give me all 200 words anyway") —
-  re-importing mastered words breaks the user's SRS schedule.
+  re-importing any word already in Reword (any status) creates a
+  duplicate card and breaks the user's SRS schedule.
 - **Never** shell out to the `reword-vocab` CLI from inside a Claude
   chat. The CLI exists for headless / cron use only. If the user
   explicitly asks for the CLI path, tell them to run it from their

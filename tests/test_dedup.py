@@ -62,17 +62,19 @@ def test_active_long_is_skipped(backup_index):
         ("wistful", "seen-only"),
     ],
 )
-def test_weak_statuses_are_kept(backup_index, word, status):
+def test_weak_statuses_are_skipped(backup_index, word, status):
+    # BL-18: any word already in the backup is a duplicate, even weak ones.
     kept, report = dedup([{"word": word}], backup_index)
-    assert len(kept) == 1
-    assert report.kept == 1
-    assert report.skipped == 0
+    assert kept == []
+    assert report.kept == 0
+    assert report.skipped == 1
     assert report.reasons == {status: 1}
 
 
 def test_normalize_input_has_to_backup_does_not(backup_index):
+    # BL-18: "to endeavor" matches "endeavor" (active) in backup -> dup.
     kept, report = dedup([{"word": "to endeavor"}], backup_index)
-    assert kept == [{"word": "to endeavor"}]
+    assert kept == []
     assert report.reasons == {"active": 1}
 
 
@@ -157,15 +159,10 @@ def test_all_seven_statuses_route_correctly(backup_index):
     ]
     kept, report = dedup(words, backup_index)
     kept_words = [k["word"] for k in kept]
-    assert kept_words == [
-        "endeavor",
-        "scrutinize",
-        "obfuscate",
-        "elucidate",
-        "wistful",
-    ]
-    assert report.kept == 5
-    assert report.skipped == 2
+    # BL-18: every word is in the backup, so all 7 are skipped as dups.
+    assert kept_words == []
+    assert report.kept == 0
+    assert report.skipped == 7
     assert report.reasons == {
         "mastered": 1,
         "active-long": 1,
