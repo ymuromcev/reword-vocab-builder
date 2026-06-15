@@ -55,19 +55,20 @@ For source mode, confirm:
 
 The user has settled on these defaults. Do not ask again:
 
-- **Output dir** — `$REWORD_VOCAB_OUTPUT_DIR` if set, otherwise
-  `~/Documents/reword-vocab-output/`. New CSVs go here. The installer
-  creates the dir; ensure it exists before writing.
-- **Legacy output dir** — `<repo>/output/` (only if the repo is
-  cloned locally). Read for dedup purposes but never write to it.
+- **Output dir (single source of truth)** — `$REWORD_VOCAB_OUTPUT_DIR`
+  if set, otherwise `~/Documents/reword-vocab-output/`. This is the ONE
+  canonical location: the skill both **writes** new CSVs here and
+  **reads** this same dir for prior-CSV dedup. Never write decks to one
+  place and dedup-scan another. The installer creates the dir; ensure
+  it exists before writing.
 - **Reword backup** — canonical source is the iCloud Reword folder
   on macOS (`~/Library/Mobile Documents/iCloud~ru~poas~englishwords/Documents/reword_en.backup`), or `$REWORD_BACKUP_PATH` if the user
   set one, or Google Drive via MCP as a last resort.
 - **Output naming** — `<output_dir>/<YYYY-MM-DD>-<slug>.csv`. Stable
   convention; do not override.
 
-If the user mentions a vocab CSV outside the output dirs above, move
-or copy it into the primary output dir and proceed — do not ask.
+If the user mentions a vocab CSV outside the canonical output dir
+above, move it into that dir and proceed — do not ask.
 
 ## Dedup behavior — always against prior vocab CSVs
 
@@ -170,12 +171,11 @@ subprocess.
    Keep only words absent from the backup. If the backup isn't
    accessible, say so and proceed without it (warn the user once).
 
-3. **Dedup vs prior CSVs.** Glob the primary output dir
-   (`$REWORD_VOCAB_OUTPUT_DIR` or `~/Documents/reword-vocab-output/`)
-   AND, if the repo is cloned at
-   `~/Desktop/Claude Code/reword-vocab-builder/output/`, that legacy
-   dir too. Read column 1 of each CSV; drop any candidate already
-   present (case-insensitive, strip leading `to `).
+3. **Dedup vs prior CSVs.** Glob the single canonical output dir
+   (`$REWORD_VOCAB_OUTPUT_DIR` or `~/Documents/reword-vocab-output/`) —
+   the same dir step 5 writes to. Read column 1 of each CSV (exclude
+   the file about to be written); drop any candidate already present
+   (case-insensitive, strip leading `to `).
 
 4. **For each remaining word, build the row:**
    - `word` — base form (prefix `to ` for verbs in base form; phrasal
